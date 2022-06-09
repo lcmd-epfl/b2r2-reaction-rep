@@ -137,7 +137,7 @@ class QML:
         return
 
     def get_hfb_data(self, energies='thermo'):
-        co_df = pd.read_csv("data/hfb_db/CO/Co_db.csv")
+        co_df = pd.read_csv("data/hfb_db/Co_db.csv")
         names = co_df["name"].to_list()
         labels = [name[3:] for name in names]
         co_reactants = ["data/hfb_db/geometries/co/r/"+label+"_reactant.xyz" for label in labels]
@@ -147,7 +147,7 @@ class QML:
         self.mols_reactants_co = [[qml.Compound(x)] for x in co_reactants]
         self.mols_products_co = [[qml.Compound(x)] for x in co_products]
 
-        ir_df = pd.read_csv("data/hfb_db/IR/Iridium.csv")
+        ir_df = pd.read_csv("data/hfb_db/Iridium.csv")
         names = ir_df["name"].to_list()
         labels = [name[3:] for name in names]
         ir_reactants = ["data/hfb_db/geometries/ir/r/"+label+"_reactant.xyz" for label in labels]
@@ -157,7 +157,7 @@ class QML:
         self.mols_reactants_ir = [[qml.Compound(x)] for x in ir_reactants]
         self.mols_products_ir = [[qml.Compound(x)] for x in ir_products]
 
-        rh_df = pd.read_csv("data/hfb_db/RH/Rh_db.csv")
+        rh_df = pd.read_csv("data/hfb_db/Rh_db.csv")
         names = rh_df["name"].to_list()
         labels = [name[3:] for name in names]
         rh_reactants = ["data/hfb_db/geometries/rh/r/"+label+"_reactant.xyz" for label in labels]
