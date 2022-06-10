@@ -344,9 +344,7 @@ class QML:
                 ]
         b2r2_products_sum = np.array([sum(x) for x in b2r2_products])
 
-        b2r2_diff = b2r2_products_sum - b2r2_reactants_sum
-
-        return b2r2_diff
+        return np.concatenate((b2r2_reactants_sum, b2r2_products_sum))
 
     def get_FCHL19(self):
         fchl_reactants = [
