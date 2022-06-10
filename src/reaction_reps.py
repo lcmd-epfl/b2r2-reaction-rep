@@ -10,7 +10,7 @@ from scipy import stats
 import itertools
 
 from src.parse_ase import xyz_to_atomsobj
-from src.b2r2 import get_b2r2_no_bags, get_b2r2_linear_bags, get_b2r2_all_bags
+from src.b2r2 import get_b2r2_n_molecular, get_b2r2_l_molecular, get_b2r2_a_molecular
 from src.slatm import get_slatm
 
 pt = {"H": 1, "C": 6, "N": 7, "O": 8, "S": 16, "Cl":17, "F":9}
@@ -277,7 +277,7 @@ class QML:
 
     def get_b2r2_linear_bags(self, Rcut=3.5, gridspace=0.03): 
         b2r2_reactants = [
-                [get_b2r2_linear_bags(x.nuclear_charges, x.coordinates,
+                [get_b2r2_l_molecular(x.nuclear_charges, x.coordinates,
                     Rcut=Rcut, gridspace=gridspace,
                     elements=self.unique_ncharges)
                 for x in reactants]
@@ -287,7 +287,7 @@ class QML:
         b2r2_reactants_sum = np.array([sum(x) for x in b2r2_reactants])
 
         b2r2_products = [
-                [get_b2r2_linear_bags(x.nuclear_charges, x.coordinates,
+                [get_b2r2_l_molecular(x.nuclear_charges, x.coordinates,
                     Rcut=Rcut, gridspace=gridspace,
                     elements=self.unique_ncharges)
                     for x in products]
@@ -302,7 +302,7 @@ class QML:
     def get_b2r2_all_bags(self, Rcut=3.5, gridspace=0.03): 
         elements=self.unique_ncharges
         b2r2_reactants = [
-                [get_b2r2_all_bags(x.nuclear_charges, x.coordinates,
+                [get_b2r2_a_molecular(x.nuclear_charges, x.coordinates,
                     Rcut=Rcut, gridspace=gridspace,
                     elements=elements)
                 for x in reactants]
@@ -312,7 +312,7 @@ class QML:
         b2r2_reactants_sum = np.array([sum(x) for x in b2r2_reactants])
 
         b2r2_products = [
-                [get_b2r2_all_bags(x.nuclear_charges, x.coordinates,
+                [get_b2r2_a_molecular(x.nuclear_charges, x.coordinates,
                     Rcut=Rcut, gridspace=gridspace,
                     elements=elements)
                     for x in products]
@@ -326,7 +326,7 @@ class QML:
 
     def get_b2r2_no_bags(self, Rcut=3.5, gridspace=0.03): 
         b2r2_reactants = [
-                [get_b2r2_no_bags(x.nuclear_charges, x.coordinates,
+                [get_b2r2_n_molecular(x.nuclear_charges, x.coordinates,
                     Rcut=Rcut, gridspace=gridspace,
                     elements=self.unique_ncharges)
                 for x in reactants]
@@ -336,7 +336,7 @@ class QML:
         b2r2_reactants_sum = np.array([sum(x) for x in b2r2_reactants])
 
         b2r2_products = [
-                [get_b2r2_no_bags(x.nuclear_charges, x.coordinates,
+                [get_b2r2_n_molecular(x.nuclear_charges, x.coordinates,
                     Rcut=Rcut, gridspace=gridspace,
                     elements=self.unique_ncharges)
                     for x in products]
@@ -344,7 +344,7 @@ class QML:
                 ]
         b2r2_products_sum = np.array([sum(x) for x in b2r2_products])
 
-        return np.concatenate((b2r2_reactants_sum, b2r2_products_sum))
+        return np.concatenate((b2r2_reactants_sum, b2r2_products_sum), axis=1)
 
     def get_FCHL19(self):
         fchl_reactants = [

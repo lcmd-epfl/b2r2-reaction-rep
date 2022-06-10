@@ -25,12 +25,8 @@ def get_skew_gaussian(x, R, Z_I, Z_J):
     func = Z_J * skewnorm.pdf(x, Z_J, mu, sigma)
     return func
 
-def get_b2r2_all_bags(ncharges, coords, elements=[1,6,7,8,9,17],
+def get_b2r2_a_molecular(ncharges, coords, elements=[1,6,7,8,9,17],
         Rcut=3.5, gridspace=0.03): 
-    for ncharge in ncharges:
-        if ncharge not in elements:
-            print('warning!', ncharge, 'not included in rep')
-
     ncharges = [x for x in ncharges if x in elements]
     bags = get_bags(elements)
     grid = np.arange(0, Rcut, gridspace)
@@ -55,7 +51,96 @@ def get_b2r2_all_bags(ncharges, coords, elements=[1,6,7,8,9,17],
     twobodyrep = np.concatenate(twobodyrep)
     return twobodyrep
 
-def get_b2r2_no_bags(ncharges, coords, elements=[1,6,7,8,9,17],
+def get_b2r2_a(reactants_ncharges, products_ncharges,
+                reactants_coords, products_coords, 
+                elements=[1,6,7,8,9,17], Rcut=3.5,
+                gridspace=0.03):
+    u_ncharges_reactants = np.unique(np.concatenate(reactants_ncharges))
+    u_ncharges_products = np.unique(np.concatenate(products_ncharges))
+    u_ncharges = np.unique(np.concatenate((u_ncharges_reactants, u_ncharges_products)))
+
+    for ncharge in u_ncharges:
+        if ncharge not in elements:
+            print("warning!", ncharge, "not included in rep")
+
+    b2r2_a_reactants = [np.sum([
+                        get_b2r2_a_molecular(x[0], x[1], Rcut=Rcut,
+                                            gridspace=gridspace, elements=elements)
+                        for x in reactants])
+                        for reactants in zip(reactants_ncharges, reactants_coords)
+                        ]
+
+    b2r2_a_products = [np.sum([
+                        get_b2r2_a_molecular(x[0], x[1], Rcut=Rcut,
+                                            gridspace=gridspace, elements=elements)
+                        for x in products])
+                        for products in zip(products_ncharges, products_coords)
+                        ]
+
+    b2r2_a = b2r2_a_products - b2r2_a_reactants
+    return b2r2_a
+
+def get_b2r2_l_molecular(ncharges, coords, elements=[1,6,7,8,9,17],
+                        Rcut=3.5, gridspace=0.03):
+
+    for ncharge in ncharges:
+        if ncharge not in elements:
+            print('warning!', ncharge, 'not included in rep')
+
+    ncharges = [x for x in ncharges if x in elements]
+
+    bags = np.array(elements)
+    grid = np.arange(0, Rcut, gridspace)
+    size = len(grid)
+    twobodyrep = np.zeros((len(bags), size))
+
+    for k, bag in enumerate(bags):
+        for i, ncharge_a in enumerate(ncharges):
+            coords_a = coords[i]
+            for j in range(len(ncharges)):
+                if i != j:
+                    ncharge_b = ncharges[j]
+                    coords_b = coords[j]
+
+                    R = np.linalg.norm(coords_b - coords_a)
+
+                    if R < Rcut:
+                        if ncharge_a == bag:
+                            twobodyrep[k] += get_skew_gaussian(grid, R, ncharge_a, ncharge_b)
+
+    twobodyrep = np.concatenate(twobodyrep)
+    return twobodyrep 
+
+def get_b2r2_l(reactants_ncharges, products_ncharges,
+                reactants_coords, products_coords, 
+                elements=[1,6,7,8,9,17], Rcut=3.5,
+                gridspace=0.03):
+    u_ncharges_reactants = np.unique(np.concatenate(reactants_ncharges))
+    u_ncharges_products = np.unique(np.concatenate(products_ncharges))
+    u_ncharges = np.unique(np.concatenate((u_ncharges_reactants, u_ncharges_products)))
+
+    for ncharge in u_ncharges:
+        if ncharge not in elements:
+            print("warning!", ncharge, "not included in rep")
+
+    b2r2_l_reactants = [np.sum([
+                        get_b2r2_l_molecular(x[0], x[1], Rcut=Rcut,
+                                            gridspace=gridspace, elements=elements)
+                        for x in reactants])
+                        for reactants in zip(reactants_ncharges, reactants_coords)
+                        ]
+
+    b2r2_l_products = [np.sum([
+                        get_b2r2_l_molecular(x[0], x[1], Rcut=Rcut,
+                                            gridspace=gridspace, elements=elements)
+                        for x in products])
+                        for products in zip(products_ncharges, products_coords)
+                        ]
+
+    b2r2_l = b2r2_l_products - b2r2_l_reactants
+    return b2r2_l
+
+def get_b2r2_n_molecular(ncharges, coords, elements=[1,6,7,8,9,17],
         Rcut=3.5, gridspace=0.03):
 
     for ncharge in ncharges:
@@ -89,35 +174,23 @@ def get_b2r2_no_bags(ncharges, coords, elements=[1,6,7,8,9,17],
     rep = np.concatenate((onebodyrep, twobodyrep))
     return rep
 
+def get_b2r2_n(reactants_ncharges, products_ncharges,
+                reactants_coords, products_coords, 
+                Rcut=3.5):
+                        
+    b2r2_n_reactants = [np.sum([
+                        get_b2r2_n_molecular(x[0], x[1], Rcut=Rcut,
+                                            gridspace=gridspace, elements=elements)
+                        for x in reactants])
+                        for reactants in zip(reactants_ncharges, reactants_coords)
+                        ]
 
-def get_b2r2_linear_bags(ncharges, coords, elements=[1,6,7,8,9,17],
-                        Rcut=3.5, gridspace=0.03):
+    b2r2_n_products = [np.sum([
+                        get_b2r2_n_molecular(x[0], x[1], Rcut=Rcut,
+                                            gridspace=gridspace, elements=elements)
+                        for x in products])
+                        for products in zip(products_ncharges, products_coords)
+                        ]
 
-    for ncharge in ncharges:
-        if ncharge not in elements:
-            print('warning!', ncharge, 'not included in rep')
-
-    ncharges = [x for x in ncharges if x in elements]
-
-    bags = np.array(elements)
-    grid = np.arange(0, Rcut, gridspace)
-    size = len(grid)
-    twobodyrep = np.zeros((len(bags), size))
-
-    for k, bag in enumerate(bags):
-        for i, ncharge_a in enumerate(ncharges):
-            coords_a = coords[i]
-            for j in range(len(ncharges)):
-                if i != j:
-                    ncharge_b = ncharges[j]
-                    coords_b = coords[j]
-
-                    R = np.linalg.norm(coords_b - coords_a)
-
-                    if R < Rcut:
-                        if ncharge_a == bag:
-                            twobodyrep[k] += get_skew_gaussian(grid, R, ncharge_a, ncharge_b)
-
-    twobodyrep = np.concatenate(twobodyrep)
-    return twobodyrep 
-
+    b2r2_n = np.concatenate((b2r2_n_reactants, b2r2_n_products))
+    return b2r2_n
