@@ -55,27 +55,36 @@ def get_b2r2_a(reactants_ncharges, products_ncharges,
                 reactants_coords, products_coords, 
                 elements=[1,6,7,8,9,17], Rcut=3.5,
                 gridspace=0.03):
-    u_ncharges_reactants = np.unique(np.concatenate(reactants_ncharges))
-    u_ncharges_products = np.unique(np.concatenate(products_ncharges))
+    """
+    Reactants_ncharges is a list of lists where the outer list is the total number
+    of reactions and the inner list is the number of reactants in each reaction
+    Same for coords, and for products
+    """
+    all_ncharges_reactants = [np.concatenate(x) for x in reactants_ncharges] 
+    u_ncharges_reactants = np.unique(np.concatenate(all_ncharges_reactants))
+    all_ncharges_products = [np.concatenate(x) for x in products_ncharges]
+    u_ncharges_products = np.unique(np.concatenate(all_ncharges_products))
     u_ncharges = np.unique(np.concatenate((u_ncharges_reactants, u_ncharges_products)))
 
     for ncharge in u_ncharges:
         if ncharge not in elements:
             print("warning!", ncharge, "not included in rep")
 
-    b2r2_a_reactants = [np.sum([
-                        get_b2r2_a_molecular(x[0], x[1], Rcut=Rcut,
+    b2r2_a_reactants = np.sum([[
+                        get_b2r2_a_molecular(reactants_ncharges[i][j], 
+                                            reactants_coords[i][j], Rcut=Rcut,
                                             gridspace=gridspace, elements=elements)
-                        for x in reactants])
-                        for reactants in zip(reactants_ncharges, reactants_coords)
-                        ]
+                        for j in range(len(reactants_ncharges[i]))]
+                        for i in range(len(reactants_ncharges))], 
+                        axis=1)
 
-    b2r2_a_products = [np.sum([
-                        get_b2r2_a_molecular(x[0], x[1], Rcut=Rcut,
+    b2r2_a_products = np.sum([[
+                        get_b2r2_a_molecular(products_ncharges[i][j], 
+                                            products_coords[i][j], Rcut=Rcut,
                                             gridspace=gridspace, elements=elements)
-                        for x in products])
-                        for products in zip(products_ncharges, products_coords)
-                        ]
+                        for j in range(len(products_ncharges[i]))]
+                        for i in range(len(products_ncharges))], 
+                        axis=1)
 
     b2r2_a = b2r2_a_products - b2r2_a_reactants
     return b2r2_a
@@ -115,27 +124,36 @@ def get_b2r2_l(reactants_ncharges, products_ncharges,
                 reactants_coords, products_coords, 
                 elements=[1,6,7,8,9,17], Rcut=3.5,
                 gridspace=0.03):
-    u_ncharges_reactants = np.unique(np.concatenate(reactants_ncharges))
-    u_ncharges_products = np.unique(np.concatenate(products_ncharges))
+    """
+    Reactants_ncharges is a list of lists where the outer list is the total number
+    of reactions and the inner list is the number of reactants in each reaction
+    Same for coords, and for products
+    """
+    all_ncharges_reactants = [np.concatenate(x) for x in reactants_ncharges] 
+    u_ncharges_reactants = np.unique(np.concatenate(all_ncharges_reactants))
+    all_ncharges_products = [np.concatenate(x) for x in products_ncharges]
+    u_ncharges_products = np.unique(np.concatenate(all_ncharges_products))
     u_ncharges = np.unique(np.concatenate((u_ncharges_reactants, u_ncharges_products)))
 
     for ncharge in u_ncharges:
         if ncharge not in elements:
             print("warning!", ncharge, "not included in rep")
 
-    b2r2_l_reactants = [np.sum([
-                        get_b2r2_l_molecular(x[0], x[1], Rcut=Rcut,
+    b2r2_l_reactants = np.sum([[
+                        get_b2r2_l_molecular(reactants_ncharges[i][j], 
+                                            reactants_coords[i][j], Rcut=Rcut,
                                             gridspace=gridspace, elements=elements)
-                        for x in reactants])
-                        for reactants in zip(reactants_ncharges, reactants_coords)
-                        ]
+                        for j in range(len(reactants_ncharges[i]))]
+                        for i in range(len(reactants_ncharges))], 
+                        axis=1)
 
-    b2r2_l_products = [np.sum([
-                        get_b2r2_l_molecular(x[0], x[1], Rcut=Rcut,
+    b2r2_l_products = np.sum([[
+                        get_b2r2_l_molecular(products_ncharges[i][j], 
+                                            products_coords[i][j], Rcut=Rcut,
                                             gridspace=gridspace, elements=elements)
-                        for x in products])
-                        for products in zip(products_ncharges, products_coords)
-                        ]
+                        for j in range(len(products_ncharges[i]))]
+                        for i in range(len(products_ncharges))], 
+                        axis=1)
 
     b2r2_l = b2r2_l_products - b2r2_l_reactants
     return b2r2_l
@@ -176,21 +194,36 @@ def get_b2r2_n_molecular(ncharges, coords, elements=[1,6,7,8,9,17],
 
 def get_b2r2_n(reactants_ncharges, products_ncharges,
                 reactants_coords, products_coords, 
-                Rcut=3.5):
-                        
-    b2r2_n_reactants = [np.sum([
-                        get_b2r2_n_molecular(x[0], x[1], Rcut=Rcut,
-                                            gridspace=gridspace, elements=elements)
-                        for x in reactants])
-                        for reactants in zip(reactants_ncharges, reactants_coords)
-                        ]
+                elements=[1,6,7,8,9,17], Rcut=3.5):
+    """
+    Reactants_ncharges is a list of lists where the outer list is the total number
+    of reactions and the inner list is the number of reactants in each reaction
+    Same for coords, and for products
+    """
+    all_ncharges_reactants = [np.concatenate(x) for x in reactants_ncharges] 
+    u_ncharges_reactants = np.unique(np.concatenate(all_ncharges_reactants))
+    all_ncharges_products = [np.concatenate(x) for x in products_ncharges]
+    u_ncharges_products = np.unique(np.concatenate(all_ncharges_products))
+    u_ncharges = np.unique(np.concatenate((u_ncharges_reactants, u_ncharges_products)))
 
-    b2r2_n_products = [np.sum([
-                        get_b2r2_n_molecular(x[0], x[1], Rcut=Rcut,
-                                            gridspace=gridspace, elements=elements)
-                        for x in products])
-                        for products in zip(products_ncharges, products_coords)
-                        ]
+    for ncharge in u_ncharges:
+        if ncharge not in elements:
+            print("warning!", ncharge, "not included in rep")
 
-    b2r2_n = np.concatenate((b2r2_n_reactants, b2r2_n_products))
-    return b2r2_n
+    b2r2_n_reactants = np.sum([[
+                        get_b2r2_n_molecular(reactants_ncharges[i][j], 
+                                            reactants_coords[i][j], Rcut=Rcut,
+                                            elements=elements)
+                        for j in range(len(reactants_ncharges[i]))]
+                        for i in range(len(reactants_ncharges))], 
+                        axis=1)
+
+    b2r2_n_products = np.sum([[
+                        get_b2r2_n_molecular(products_ncharges[i][j], 
+                                            products_coords[i][j], Rcut=Rcut,
+                                            elements=elements)
+                        for j in range(len(products_ncharges[i]))]
+                        for i in range(len(products_ncharges))], 
+                        axis=1)
+    rep = np.concatenate((b2r2_n_reactants, b2r2_n_products), axis=1)
+    return rep
