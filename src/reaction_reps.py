@@ -2,10 +2,8 @@ from ast import literal_eval
 
 import numpy as np
 import pandas as pd
-from scipy.stats.mstats import gmean
 import qml
 from dscribe.descriptors import SOAP
-from sklearn.preprocessing import StandardScaler
 from scipy import stats
 import itertools
 
@@ -15,18 +13,15 @@ from src.slatm import get_slatm
 
 pt = {"H": 1, "C": 6, "N": 7, "O": 8, "S": 16, "Cl":17, "F":9}
 
-
-class QML:
+class B2R2:
+    """ Reps available in B2R2 series """
     def __init__(self):
-        self.ncharges = []
         self.unique_ncharges = []
-        self.max_natoms = 0
-        self.atomtype_dict = {"H": 0, "C": 0, "N": 0, "O": 0, "S": 0, "Cl":0,
-                                "F":0}
-        self.mols_products = []
+        self.barriers = []
+        self.energies = []
         self.mols_reactants = [[]]
+        self.mols_products = [[]]
         return
-
 
     def get_sn2_data(self):
         reactions = pd.read_csv("data/sn2-data/reactions.csv", index_col=0)
@@ -37,22 +32,8 @@ class QML:
         all_p_files = [x for reactions in reactions["product"].to_list() for x in reactions]
         all_files = list(set(all_r_files)) + list(set(all_p_files))
         all_mols = [qml.Compound(x) for x in all_files]
-        self.ncharges = [mol.nuclear_charges for mol in all_mols]
+        ncharges = [mol.nuclear_charges for mol in all_mols]
         self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
-        self.max_natoms = max([len(mol.nuclear_charges) for mol in all_mols])
-
-        # atomtype dict for BoB
-        for elem in pt.keys():
-            counts = []
-            for ncharge_list in self.ncharges:
-                count = np.count_nonzero(ncharge_list == pt[elem])
-                counts.append(count)
-
-                # keep max count
-                if counts:
-                    self.atomtype_dict[elem] = max(counts)
-                else:
-                    self.atomtype_dict[elem] = 1
 
         self.mols_reactants = [
             [qml.Compound(x) for x in reactants]
@@ -70,26 +51,11 @@ class QML:
         self.barriers = reactions["ea kcal/mol"].to_numpy()
         all_r_files = ["data/grambow-barriers/xyz/"+x for x in reactions["reactant"].to_list()]
         all_p_files = ["data/grambow-barriers/xyz/"+x for x in reactions["product"].to_list()]
+        ncharges = [x[0].nuclear_charges for x in self.mols_reactants]
+        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
+        
         self.mols_reactants = [[qml.Compound(x)] for x in all_r_files]
         self.mols_products = [[qml.Compound(x)] for x in all_p_files]
-        self.ncharges = [x[0].nuclear_charges for x in self.mols_reactants]
-        non_h_ncharges = [[x for x in ncharges if x!=1] for ncharges in self.ncharges]
-        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
-        self.max_natoms = max([len(x) for x in self.ncharges])
-        self.max_nonh_atoms = max([len(x) for x in non_h_ncharges])
-        
-        for elem in pt.keys():
-            counts = []
-            for ncharge_list in self.ncharges:
-                count = np.count_nonzero(ncharge_list == pt[elem])
-                counts.append(count)
-
-                # keep max count
-                if counts:
-                    self.atomtype_dict[elem] = max(counts)
-                else:
-                    self.atomtype_dict[elem] = 1
-
         return
 
     def get_ee_data(self):
@@ -101,29 +67,7 @@ class QML:
         all_mols = [qml.Compound(x) for x in reactants_files + products_files]
         self.energies = data.dErxn.to_numpy()
         self.ncharges = [mol.nuclear_charges for mol in all_mols]
-        self.non_h_ncharges = [[x for x in ncharges if x!=1] for ncharges in self.ncharges]
         self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
-        self.non_h_unique_ncharges = np.unique(np.concatenate(self.non_h_ncharges))
-        self.max_nonh_atoms = max([len(x) for x in self.non_h_ncharges])
-
-        # atomtype dict for BoB
-        for elem in pt.keys():
-            counts = []
-            for ncharge_list in self.ncharges:
-                count = np.count_nonzero(ncharge_list == pt[elem])
-                counts.append(count)
-
-                # keep max count
-                if counts:
-                    self.atomtype_dict[elem] = max(counts)
-                else:
-                    self.atomtype_dict[elem] = 1
-
-        # bags 
-        combs = list(itertools.combinations(self.unique_ncharges, r=2))
-        combs = [list(x) for x in combs]
-        self_combs = [[x,x] for x in self.unique_ncharges]
-        self.bags = combs + self_combs 
 
         self.mols_reactants = [
             [qml.Compound(x)]
@@ -182,11 +126,168 @@ class QML:
         self.mols_reactants = [[qml.Compound(x)] for x in all_reactants]
         self.mols_products = [[qml.Compound(x)] for x in all_products]
 
-        self.ncharges = [mol.nuclear_charges for mol in list_reactants]
-        self.non_h_ncharges = [[x for x in ncharges if x!=1] for ncharges in self.ncharges]
+        ncharges = [mol.nuclear_charges for mol in list_reactants]
         self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
-        self.non_h_unique_ncharges = np.unique(np.concatenate(self.non_h_ncharges))
-        self.max_nonh_atoms = max([len(x) for x in self.non_h_ncharges])
+
+        return
+
+    def get_b2r2_l(self, Rcut=3.5, gridspace=0.03): 
+        b2r2_reactants = [
+                [get_b2r2_l_molecular(x.nuclear_charges, x.coordinates,
+                    Rcut=Rcut, gridspace=gridspace,
+                    elements=self.unique_ncharges)
+                for x in reactants]
+                for reactants in self.mols_reactants
+                ]
+        # first index is reactants
+        b2r2_reactants_sum = np.array([sum(x) for x in b2r2_reactants])
+
+        b2r2_products = [
+                [get_b2r2_l_molecular(x.nuclear_charges, x.coordinates,
+                    Rcut=Rcut, gridspace=gridspace,
+                    elements=self.unique_ncharges)
+                    for x in products]
+                for products in self.mols_products
+                ]
+        b2r2_products_sum = np.array([sum(x) for x in b2r2_products])
+
+        b2r2_diff = b2r2_products_sum - b2r2_reactants_sum
+
+        return b2r2_diff
+
+    def get_b2r2_a(self, Rcut=3.5, gridspace=0.03): 
+        elements=self.unique_ncharges
+        b2r2_reactants = [
+                [get_b2r2_a_molecular(x.nuclear_charges, x.coordinates,
+                    Rcut=Rcut, gridspace=gridspace,
+                    elements=elements)
+                for x in reactants]
+                for reactants in self.mols_reactants
+                ]
+        # first index is reactants
+        b2r2_reactants_sum = np.array([sum(x) for x in b2r2_reactants])
+
+        b2r2_products = [
+                [get_b2r2_a_molecular(x.nuclear_charges, x.coordinates,
+                    Rcut=Rcut, gridspace=gridspace,
+                    elements=elements)
+                    for x in products]
+                for products in self.mols_products
+                ]
+        b2r2_products_sum = np.array([sum(x) for x in b2r2_products])
+
+        b2r2_diff = b2r2_products_sum - b2r2_reactants_sum
+
+        return b2r2_diff
+
+    def get_b2r2_n(self, Rcut=3.5): 
+        b2r2_reactants = [
+                [get_b2r2_n_molecular(x.nuclear_charges, x.coordinates,
+                    Rcut=Rcut,
+                    elements=self.unique_ncharges)
+                for x in reactants]
+                for reactants in self.mols_reactants
+                ]
+        # first index is reactants
+        b2r2_reactants_sum = np.array([sum(x) for x in b2r2_reactants])
+
+        b2r2_products = [
+                [get_b2r2_n_molecular(x.nuclear_charges, x.coordinates,
+                    Rcut=Rcut,
+                    elements=self.unique_ncharges)
+                    for x in products]
+                for products in self.mols_products
+                ]
+        b2r2_products_sum = np.array([sum(x) for x in b2r2_products])
+
+        return np.concatenate((b2r2_reactants_sum, b2r2_products_sum), axis=1)
+
+
+class QML:
+    """ Reps available in the qml package """
+    def __init__(self):
+        self.unique_ncharges = []
+        self.max_natoms = 0
+        self.atomtype_dict = {"H": 0, "C": 0, "N": 0, "O": 0, "S": 0, "Cl":0,
+                                "F":0}
+        self.mols_reactants = [[]]
+        self.mols_products = [[]]
+        self.energies = []
+        self.barriers = []
+        return
+
+    def get_sn2_data(self):
+        reactions = pd.read_csv("data/sn2-data/reactions.csv", index_col=0)
+        reactions["reactant"] = reactions["reactant"].apply(literal_eval)
+        reactions["product"] = reactions["product"].apply(literal_eval)
+        self.energies = reactions["rxn_nrj"].to_numpy()
+        all_r_files = [x for reactions in reactions["reactant"].to_list() for x in reactions]
+        all_p_files = [x for reactions in reactions["product"].to_list() for x in reactions]
+        all_files = list(set(all_r_files)) + list(set(all_p_files))
+        all_mols = [qml.Compound(x) for x in all_files]
+        self.ncharges = [mol.nuclear_charges for mol in all_mols]
+        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
+        self.max_natoms = max([len(mol.nuclear_charges) for mol in all_mols])
+
+        # atomtype dict for BoB
+        for elem in pt.keys():
+            counts = []
+            for ncharge_list in self.ncharges:
+                count = np.count_nonzero(ncharge_list == pt[elem])
+                counts.append(count)
+
+                # keep max count
+                if counts:
+                    self.atomtype_dict[elem] = max(counts)
+                else:
+                    self.atomtype_dict[elem] = 1
+
+        self.mols_reactants = [
+            [qml.Compound(x) for x in reactants]
+            for reactants in reactions["reactant"].to_list()
+        ]
+        self.mols_products = [
+            [qml.Compound(x) for x in products]
+            for products in reactions["product"].to_list()
+        ]
+
+        return
+
+    def get_grambow_data(self):
+        reactions = pd.read_csv("data/grambow-barriers/dataset.csv")
+        self.barriers = reactions["ea kcal/mol"].to_numpy()
+        all_r_files = ["data/grambow-barriers/xyz/"+x for x in reactions["reactant"].to_list()]
+        all_p_files = ["data/grambow-barriers/xyz/"+x for x in reactions["product"].to_list()]
+        self.mols_reactants = [[qml.Compound(x)] for x in all_r_files]
+        self.mols_products = [[qml.Compound(x)] for x in all_p_files]
+        self.ncharges = [x[0].nuclear_charges for x in self.mols_reactants]
+        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
+        self.max_natoms = max([len(x) for x in self.ncharges])
+        
+        for elem in pt.keys():
+            counts = []
+            for ncharge_list in self.ncharges:
+                count = np.count_nonzero(ncharge_list == pt[elem])
+                counts.append(count)
+
+                # keep max count
+                if counts:
+                    self.atomtype_dict[elem] = max(counts)
+                else:
+                    self.atomtype_dict[elem] = 1
+
+        return
+
+    def get_ee_data(self):
+        data = pd.read_csv("data/ee/data.csv", index_col=0)
+        reactants_files = ["data/ee/data_react_xyz/"+data.mol.values[i]+data.enan.values[i]+'.xyz'
+                     for i in range(len(data))]
+        products_files = ["data/ee/data_prod_xyz/"+data.mol.values[i]+data.enan.values[i]+'.xyz'
+                    for i in range(len(data))]
+        all_mols = [qml.Compound(x) for x in reactants_files + products_files]
+        self.energies = data.dErxn.to_numpy()
+        self.ncharges = [mol.nuclear_charges for mol in all_mols]
+        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
         self.max_natoms = max([len(x) for x in self.ncharges])
 
         # atomtype dict for BoB
@@ -202,11 +303,79 @@ class QML:
                 else:
                     self.atomtype_dict[elem] = 1
 
-        # bags 
-        combs = list(itertools.combinations(self.unique_ncharges, r=2))
-        combs = [list(x) for x in combs]
-        self_combs = [[x,x] for x in self.unique_ncharges]
-        self.bags = combs + self_combs 
+        self.mols_reactants = [
+            [qml.Compound(x)]
+            for x in reactants_files 
+        ]
+        self.mols_products = [
+            [qml.Compound(x)]
+            for x in products_files
+        ]
+
+        return
+
+    def get_hfb_data(self, energies='thermo'):
+        co_df = pd.read_csv("data/hfb_db/Co_db.csv")
+        names = co_df["name"].to_list()
+        labels = [name[3:] for name in names]
+        co_reactants = ["data/hfb_db/geometries/co/r/"+label+"_reactant.xyz" for label in labels]
+        co_products = ["data/hfb_db/geometries/co/p/"+label+"_product.xyz" for label in labels]
+        self.co_barriers = co_df["f_barr"].to_numpy()
+        self.co_energies = (co_df["en_prod"].to_numpy() - co_df["en_react"].to_numpy()) * 627.5
+        self.mols_reactants_co = [[qml.Compound(x)] for x in co_reactants]
+        self.mols_products_co = [[qml.Compound(x)] for x in co_products]
+
+        ir_df = pd.read_csv("data/hfb_db/Iridium.csv")
+        names = ir_df["name"].to_list()
+        labels = [name[3:] for name in names]
+        ir_reactants = ["data/hfb_db/geometries/ir/r/"+label+"_reactant.xyz" for label in labels]
+        ir_products = ["data/hfb_db/geometries/ir/p/"+label+"_product.xyz" for label in labels]
+        self.ir_barriers = ir_df["f_barr"].to_numpy()
+        self.ir_energies = (ir_df["en_prod"].to_numpy() - ir_df["en_react"].to_numpy()) * 627.5
+        self.mols_reactants_ir = [[qml.Compound(x)] for x in ir_reactants]
+        self.mols_products_ir = [[qml.Compound(x)] for x in ir_products]
+
+        rh_df = pd.read_csv("data/hfb_db/Rh_db.csv")
+        names = rh_df["name"].to_list()
+        labels = [name[3:] for name in names]
+        rh_reactants = ["data/hfb_db/geometries/rh/r/"+label+"_reactant.xyz" for label in labels]
+        rh_products = ["data/hfb_db/geometries/rh/p/"+label+"_product.xyz" for label in labels]
+        self.rh_barriers = rh_df["f_barr"].to_numpy()
+        self.rh_energies = (rh_df["en_prod"].to_numpy() - rh_df["en_react"].to_numpy()) * 627.5
+        self.mols_reactants_rh = [[qml.Compound(x)] for x in rh_reactants]
+        self.mols_products_rh = [[qml.Compound(x)] for x in rh_products]
+
+        if energies == 'thermo':
+            print('using rxn energies')
+            self.energies = np.concatenate((self.co_energies, self.ir_energies, self.rh_energies), axis=0)
+        else:
+            print('using barriers')
+            self.energies = np.concatenate((self.co_barriers, self.ir_barriers, self.rh_barriers), axis=0)
+
+        all_reactants = co_reactants + ir_reactants + rh_reactants
+        all_products = co_products + ir_products + rh_products
+        list_reactants = [qml.Compound(x) for x in all_reactants]
+
+        self.mols_reactants = [[qml.Compound(x)] for x in all_reactants]
+        self.mols_products = [[qml.Compound(x)] for x in all_products]
+
+        self.ncharges = [mol.nuclear_charges for mol in list_reactants]
+        self.unique_ncharges = np.unique(np.concatenate(ncharges))
+        self.max_natoms = max([len(x) for x in ncharges])
+
+        # atomtype dict for BoB
+        for elem in pt.keys():
+            counts = []
+            for ncharge_list in self.ncharges:
+                count = np.count_nonzero(ncharge_list == pt[elem])
+                counts.append(count)
+
+                # keep max count
+                if counts:
+                    self.atomtype_dict[elem] = max(counts)
+                else:
+                    self.atomtype_dict[elem] = 1
+
         return
 
     def get_CM(self):
@@ -275,76 +444,6 @@ class QML:
         bob_r_p = np.concatenate((bob_reactants, bob_products), axis=1)
         return bob_reactants, bob_products, bob_r_p 
 
-    def get_b2r2_linear_bags(self, Rcut=3.5, gridspace=0.03): 
-        b2r2_reactants = [
-                [get_b2r2_l_molecular(x.nuclear_charges, x.coordinates,
-                    Rcut=Rcut, gridspace=gridspace,
-                    elements=self.unique_ncharges)
-                for x in reactants]
-                for reactants in self.mols_reactants
-                ]
-        # first index is reactants
-        b2r2_reactants_sum = np.array([sum(x) for x in b2r2_reactants])
-
-        b2r2_products = [
-                [get_b2r2_l_molecular(x.nuclear_charges, x.coordinates,
-                    Rcut=Rcut, gridspace=gridspace,
-                    elements=self.unique_ncharges)
-                    for x in products]
-                for products in self.mols_products
-                ]
-        b2r2_products_sum = np.array([sum(x) for x in b2r2_products])
-
-        b2r2_diff = b2r2_products_sum - b2r2_reactants_sum
-
-        return b2r2_diff
-
-    def get_b2r2_all_bags(self, Rcut=3.5, gridspace=0.03): 
-        elements=self.unique_ncharges
-        b2r2_reactants = [
-                [get_b2r2_a_molecular(x.nuclear_charges, x.coordinates,
-                    Rcut=Rcut, gridspace=gridspace,
-                    elements=elements)
-                for x in reactants]
-                for reactants in self.mols_reactants
-                ]
-        # first index is reactants
-        b2r2_reactants_sum = np.array([sum(x) for x in b2r2_reactants])
-
-        b2r2_products = [
-                [get_b2r2_a_molecular(x.nuclear_charges, x.coordinates,
-                    Rcut=Rcut, gridspace=gridspace,
-                    elements=elements)
-                    for x in products]
-                for products in self.mols_products
-                ]
-        b2r2_products_sum = np.array([sum(x) for x in b2r2_products])
-
-        b2r2_diff = b2r2_products_sum - b2r2_reactants_sum
-
-        return b2r2_diff
-
-    def get_b2r2_no_bags(self, Rcut=3.5, gridspace=0.03): 
-        b2r2_reactants = [
-                [get_b2r2_n_molecular(x.nuclear_charges, x.coordinates,
-                    Rcut=Rcut, gridspace=gridspace,
-                    elements=self.unique_ncharges)
-                for x in reactants]
-                for reactants in self.mols_reactants
-                ]
-        # first index is reactants
-        b2r2_reactants_sum = np.array([sum(x) for x in b2r2_reactants])
-
-        b2r2_products = [
-                [get_b2r2_n_molecular(x.nuclear_charges, x.coordinates,
-                    Rcut=Rcut, gridspace=gridspace,
-                    elements=self.unique_ncharges)
-                    for x in products]
-                for products in self.mols_products
-                ]
-        b2r2_products_sum = np.array([sum(x) for x in b2r2_products])
-
-        return np.concatenate((b2r2_reactants_sum, b2r2_products_sum), axis=1)
 
     def get_FCHL19(self):
         fchl_reactants = [
@@ -451,16 +550,17 @@ class QML:
         return slatm_reactants_sum, slatm_products, slatm_diff
 
 class DScribe:
+    """ For SOAP via DScribe """
     def __init__(self):
-        self.ncharges = []
         self.unique_ncharges = []
         self.atoms_reactants = [[]]
-        self.atoms_products = []
+        self.atoms_products = [[]]
+        self.energies = []
+        self.barriers = []
 
         return
 
     def get_sn2_data(self):
-        """Parse data from SN2 reactions and store"""
         reactions = pd.read_csv("data/sn2-data/reactions.csv", index_col=0)
         reactions["reactant"] = reactions["reactant"].apply(literal_eval)
         reactions["product"] = reactions["product"].apply(literal_eval)
@@ -470,8 +570,8 @@ class DScribe:
         all_p_files = [x for reactions in reactions["product"].to_list() for x in reactions]
         all_files = list(set(all_r_files)) + list(set(all_p_files))
         all_atoms = [xyz_to_atomsobj(x) for x in all_files]
-        self.ncharges = [a.numbers for a in all_atoms]
-        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
+        ncharges = [a.numbers for a in all_atoms]
+        self.unique_ncharges = np.unique(np.concatenate(ncharges))
 
         self.atoms_reactants = [
             [xyz_to_atomsobj(x) for x in reactants]
@@ -490,8 +590,8 @@ class DScribe:
         all_p_files = ["data/grambow-barriers/xyz/"+x for x in reactions["product"].to_list()]
         self.atoms_reactants = [[xyz_to_atomsobj(x)] for x in all_r_files]
         self.atoms_products = [[xyz_to_atomsobj(x)] for x in all_p_files]
-        self.ncharges = [x[0].numbers for x in self.atoms_reactants]
-        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
+        ncharges = [x[0].numbers for x in self.atoms_reactants]
+        self.unique_ncharges = np.unique(np.concatenate(ncharges))
 
         return
 
@@ -505,8 +605,8 @@ class DScribe:
         self.energies = data.dErxn.to_numpy()
         all_files = reactants_files + products_files 
         all_atoms = [xyz_to_atomsobj(x) for x in all_files]
-        self.ncharges = [a.numbers for a in all_atoms]
-        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
+        ncharges = [a.numbers for a in all_atoms]
+        self.unique_ncharges = np.unique(np.concatenate(ncharges))
 
         self.atoms_reactants = [
             [xyz_to_atomsobj(x)]
@@ -519,7 +619,7 @@ class DScribe:
         return
 
     def get_hfb_data(self, energies='thermo'):
-        co_df = pd.read_csv("data/hfb_db/CO/Co_db.csv")
+        co_df = pd.read_csv("data/hfb_db/Co_db.csv")
         names = co_df["name"].to_list()
         labels = [name[3:] for name in names]
         co_reactants = ["data/hfb_db/geometries/co/r/"+label+"_reactant.xyz" for label in labels]
@@ -529,7 +629,7 @@ class DScribe:
         self.atoms_reactants_co = [[xyz_to_atomsobj(x)] for x in co_reactants]
         self.atoms_products_co = [[xyz_to_atomsobj(x)] for x in co_products]
 
-        ir_df = pd.read_csv("data/hfb_db/IR/Iridium.csv")
+        ir_df = pd.read_csv("data/hfb_db/Iridium.csv")
         names = ir_df["name"].to_list()
         labels = [name[3:] for name in names]
         ir_reactants = ["data/hfb_db/geometries/ir/r/"+label+"_reactant.xyz" for label in labels]
@@ -539,7 +639,7 @@ class DScribe:
         self.atoms_reactants_ir = [[xyz_to_atomsobj(x)] for x in ir_reactants]
         self.atoms_products_ir = [[xyz_to_atomsobj(x)] for x in ir_products]
 
-        rh_df = pd.read_csv("data/hfb_db/RH/Rh_db.csv")
+        rh_df = pd.read_csv("data/hfb_db/Rh_db.csv")
         names = rh_df["name"].to_list()
         labels = [name[3:] for name in names]
         rh_reactants = ["data/hfb_db/geometries/rh/r/"+label+"_reactant.xyz" for label in labels]
@@ -557,12 +657,14 @@ class DScribe:
         self.atoms_products = [[xyz_to_atomsobj(x)] for x in all_products]
 
         if energies == 'thermo':
+            print("using reaction energies")
             self.energies = np.concatenate((self.co_energies, self.ir_energies, self.rh_energies))
         else:
+            print("using barriers")
             self.energies = np.concatenate((self.co_barriers, self.ir_barriers, self.rh_barriers))
-        self.ncharges = [a.numbers for a in list_reactants]
-        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
-        self.max_natoms = max([len(x) for x in self.ncharges])
+        ncharges = [a.numbers for a in list_reactants]
+        self.unique_ncharges = np.unique(np.concatenate(ncharges))
+        self.max_natoms = max([len(x) for x in ncharges])
 
         return
 
