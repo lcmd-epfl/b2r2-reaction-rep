@@ -11,5 +11,5 @@ An example generating learning curves for all reaction reps for the SN2 dataset 
 This repo accompanies the paper "Quantum Machine Learning for Chemical Reactions"
 
 # TODO 
-- Demo for usage for any new dataset coming soon
 - B2R2 will be implemented in fortran for efficiency
+- Usage for experimental data including conditions
