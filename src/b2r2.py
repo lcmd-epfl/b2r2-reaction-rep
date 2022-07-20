@@ -67,15 +67,8 @@ def get_b2r2_no_bags(ncharges, coords, elements=[1,6,7,8,9,17],
     grid = np.arange(0, Rcut, gridspace)
     size = len(grid)
     twobodyrep = np.zeros(size)
-    onebodyrep = np.zeros(len(elements))
 
     for i, ncharge_a in enumerate(ncharges):
-        # one body
-        for k, elem in enumerate(elements):
-            if ncharge_a == elem:
-                onebodyrep[k] += 1 
-
-        # two body 
         coords_a = coords[i]
         for j in range(len(ncharges)):
             ncharge_b = ncharges[j]
@@ -86,8 +79,7 @@ def get_b2r2_no_bags(ncharges, coords, elements=[1,6,7,8,9,17],
                 if R < Rcut:
                     twobodyrep += get_skew_gaussian(grid, R, ncharge_a, ncharge_b)
 
-    rep = np.concatenate((onebodyrep, twobodyrep))
-    return rep
+    return twobodyrep
 
 
 def get_b2r2_linear_bags(ncharges, coords, elements=[1,6,7,8,9,17],
