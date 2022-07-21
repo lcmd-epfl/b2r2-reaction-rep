@@ -22,7 +22,7 @@ def get_gaussian(x, R):
 
 def get_skew_gaussian(x, R, Z_I, Z_J):
     mu, sigma = get_mu_sigma(R)
-    func = Z_J * skewnorm.pdf(x, Z_J, mu, sigma)
+    func = Z_I * skewnorm.pdf(x, Z_J, mu, sigma)
     return func
 
 def get_b2r2_a_molecular(ncharges, coords, elements=[1,6,7,8,9,17],
