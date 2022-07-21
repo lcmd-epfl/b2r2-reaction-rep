@@ -190,7 +190,8 @@ def get_b2r2_n_molecular(ncharges, coords, elements=[1,6,7,8,9,17],
 
 def get_b2r2_n(reactants_ncharges, products_ncharges,
                 reactants_coords, products_coords, 
-                elements=[1,6,7,8,9,17], Rcut=3.5):
+                elements=[1,6,7,8,9,17], Rcut=3.5,
+                gridspace=0.03):
     """
     Reactants_ncharges is a list of lists where the outer list is the total number
     of reactions and the inner list is the number of reactants in each reaction
@@ -209,7 +210,7 @@ def get_b2r2_n(reactants_ncharges, products_ncharges,
     b2r2_n_reactants = np.sum([[
                         get_b2r2_n_molecular(reactants_ncharges[i][j], 
                                             reactants_coords[i][j], Rcut=Rcut,
-                                            elements=elements)
+                                            gridspace=gridspace, elements=elements)
                         for j in range(len(reactants_ncharges[i]))]
                         for i in range(len(reactants_ncharges))], 
                         axis=1)
@@ -217,9 +218,10 @@ def get_b2r2_n(reactants_ncharges, products_ncharges,
     b2r2_n_products = np.sum([[
                         get_b2r2_n_molecular(products_ncharges[i][j], 
                                             products_coords[i][j], Rcut=Rcut,
-                                            elements=elements)
+                                            gridspace=gridspace, elements=elements)
                         for j in range(len(products_ncharges[i]))]
                         for i in range(len(products_ncharges))], 
                         axis=1)
-    rep = np.concatenate((b2r2_n_reactants, b2r2_n_products), axis=1)
-    return rep
+
+    b2r2_n = b2r2_n_products - b2r2_n_reactants
+    return b2r2_n
