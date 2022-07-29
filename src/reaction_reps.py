@@ -32,7 +32,7 @@ class B2R2:
         all_p_files = [x for reactions in reactions["product"].to_list() for x in reactions]
         all_files = list(set(all_r_files)) + list(set(all_p_files))
         all_mols = [qml.Compound(x) for x in all_files]
-        ncharges = [mol.nuclear_charges for mol in all_mols]
+        self.ncharges = [mol.nuclear_charges for mol in all_mols]
         self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
 
         self.mols_reactants = [
