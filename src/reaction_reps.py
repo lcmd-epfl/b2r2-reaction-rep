@@ -24,7 +24,7 @@ class B2R2:
         return
 
     def get_sn2_data(self):
-        reactions = pd.read_csv("data/sn2-data/reactions.csv", index_col=0)
+        reactions = pd.read_csv("data/SN2-20/reactions.csv", index_col=0)
         reactions["reactant"] = reactions["reactant"].apply(literal_eval)
         reactions["product"] = reactions["product"].apply(literal_eval)
         self.energies = reactions["rxn_nrj"].to_numpy()
@@ -46,11 +46,11 @@ class B2R2:
 
         return
 
-    def get_grambow_data(self):
-        reactions = pd.read_csv("data/grambow-barriers/dataset.csv")
+    def get_gdb7_rxn_data(self):
+        reactions = pd.read_csv("data/GDB7-20-TS/dataset.csv")
         self.barriers = reactions["ea kcal/mol"].to_numpy()
-        all_r_files = ["data/grambow-barriers/xyz/"+x for x in reactions["reactant"].to_list()]
-        all_p_files = ["data/grambow-barriers/xyz/"+x for x in reactions["product"].to_list()]
+        all_r_files = ["data/GDB7-20-TS/xyz/"+x for x in reactions["reactant"].to_list()]
+        all_p_files = ["data/GDB7-20-TS/xyz/"+x for x in reactions["product"].to_list()]
         ncharges = [x[0].nuclear_charges for x in self.mols_reactants]
         self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
         
@@ -58,14 +58,14 @@ class B2R2:
         self.mols_products = [[qml.Compound(x)] for x in all_p_files]
         return
 
-    def get_ee_data(self):
-        data = pd.read_csv("data/ee/data.csv", index_col=0)
-        reactants_files = ["data/ee/data_react_xyz/"+data.mol.values[i]+data.enan.values[i]+'.xyz'
+    def get_proparg_data(self):
+        data = pd.read_csv("data/Proparg-21-TS/data.csv", index_col=0)
+        reactants_files = ["data/Proparg-21-TS/data_react_xyz/"+data.mol.values[i]+data.enan.values[i]+'.xyz'
                      for i in range(len(data))]
-        products_files = ["data/ee/data_prod_xyz/"+data.mol.values[i]+data.enan.values[i]+'.xyz'
+        products_files = ["data/Proparg-21-TS/data_prod_xyz/"+data.mol.values[i]+data.enan.values[i]+'.xyz'
                     for i in range(len(data))]
         all_mols = [qml.Compound(x) for x in reactants_files + products_files]
-        self.energies = data.dErxn.to_numpy()
+        self.barriers = data.dErxn.to_numpy()
         self.ncharges = [mol.nuclear_charges for mol in all_mols]
         self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
 
@@ -80,44 +80,36 @@ class B2R2:
 
         return
 
-    def get_hfb_data(self, energies='thermo'):
-        co_df = pd.read_csv("data/hfb_db/Co_db.csv")
+    def get_hydroform_data(self):
+        co_df = pd.read_csv("data/Hydroform-22-TS/Co_clean.csv")
         names = co_df["name"].to_list()
         labels = [name[3:] for name in names]
-        co_reactants = ["data/hfb_db/geometries/co/r/"+label+"_reactant.xyz" for label in labels]
-        co_products = ["data/hfb_db/geometries/co/p/"+label+"_product.xyz" for label in labels]
+        co_reactants = ["data/Hydroform-22-TS/geometries/co/r/"+label+"_reactant.xyz" for label in labels]
+        co_products = ["data/Hydroform-22-TS/geometries/co/p/"+label+"_product.xyz" for label in labels]
         self.co_barriers = co_df["f_barr"].to_numpy()
-        self.co_energies = (co_df["en_prod"].to_numpy() - co_df["en_react"].to_numpy()) * 627.5
         self.mols_reactants_co = [[qml.Compound(x)] for x in co_reactants]
         self.mols_products_co = [[qml.Compound(x)] for x in co_products]
 
-        ir_df = pd.read_csv("data/hfb_db/Iridium.csv")
+        ir_df = pd.read_csv("data/Hydroform-22-TS/Ir_clean.csv")
         names = ir_df["name"].to_list()
         labels = [name[3:] for name in names]
-        ir_reactants = ["data/hfb_db/geometries/ir/r/"+label+"_reactant.xyz" for label in labels]
-        ir_products = ["data/hfb_db/geometries/ir/p/"+label+"_product.xyz" for label in labels]
+        ir_reactants = ["data/Hydroform-22-TS/geometries/ir/r/"+label+"_reactant.xyz" for label in labels]
+        ir_products = ["data/Hydroform-22_TS/geometries/ir/p/"+label+"_product.xyz" for label in labels]
         self.ir_barriers = ir_df["f_barr"].to_numpy()
-        self.ir_energies = (ir_df["en_prod"].to_numpy() - ir_df["en_react"].to_numpy()) * 627.5
         self.mols_reactants_ir = [[qml.Compound(x)] for x in ir_reactants]
         self.mols_products_ir = [[qml.Compound(x)] for x in ir_products]
 
-        rh_df = pd.read_csv("data/hfb_db/Rh_db.csv")
+        rh_df = pd.read_csv("data/Hydroform-22-TS/Rh_clean.csv")
         names = rh_df["name"].to_list()
         labels = [name[3:] for name in names]
-        rh_reactants = ["data/hfb_db/geometries/rh/r/"+label+"_reactant.xyz" for label in labels]
-        rh_products = ["data/hfb_db/geometries/rh/p/"+label+"_product.xyz" for label in labels]
+        rh_reactants = ["data/Hydroform-22-TS/geometries/rh/r/"+label+"_reactant.xyz" for label in labels]
+        rh_products = ["data/Hydroform-22-TS/geometries/rh/p/"+label+"_product.xyz" for label in labels]
         self.rh_barriers = rh_df["f_barr"].to_numpy()
-        self.rh_energies = (rh_df["en_prod"].to_numpy() - rh_df["en_react"].to_numpy()) * 627.5
         self.mols_reactants_rh = [[qml.Compound(x)] for x in rh_reactants]
         self.mols_products_rh = [[qml.Compound(x)] for x in rh_products]
 
 
-        if energies == 'thermo':
-            print('using rxn energies')
-            self.energies = np.concatenate((self.co_energies, self.ir_energies, self.rh_energies), axis=0)
-        else:
-            print('using barriers')
-            self.energies = np.concatenate((self.co_barriers, self.ir_barriers, self.rh_barriers), axis=0)
+        self.barriers = np.concatenate((self.co_barriers, self.ir_barriers, self.rh_barriers), axis=0)
 
         all_reactants = co_reactants + ir_reactants + rh_reactants
         all_products = co_products + ir_products + rh_products
@@ -217,7 +209,7 @@ class QML:
         return
 
     def get_sn2_data(self):
-        reactions = pd.read_csv("data/sn2-data/reactions.csv", index_col=0)
+        reactions = pd.read_csv("data/SN2-20/reactions.csv", index_col=0)
         reactions["reactant"] = reactions["reactant"].apply(literal_eval)
         reactions["product"] = reactions["product"].apply(literal_eval)
         self.energies = reactions["rxn_nrj"].to_numpy()
@@ -253,11 +245,11 @@ class QML:
 
         return
 
-    def get_grambow_data(self):
-        reactions = pd.read_csv("data/grambow-barriers/dataset.csv")
+    def get_gdb7_rxn_data(self):
+        reactions = pd.read_csv("data/GDB7-20-TS/dataset.csv")
         self.barriers = reactions["ea kcal/mol"].to_numpy()
-        all_r_files = ["data/grambow-barriers/xyz/"+x for x in reactions["reactant"].to_list()]
-        all_p_files = ["data/grambow-barriers/xyz/"+x for x in reactions["product"].to_list()]
+        all_r_files = ["data/GDB7-20-TS/xyz/"+x for x in reactions["reactant"].to_list()]
+        all_p_files = ["data/GDB7-20-TS/xyz/"+x for x in reactions["product"].to_list()]
         self.mols_reactants = [[qml.Compound(x)] for x in all_r_files]
         self.mols_products = [[qml.Compound(x)] for x in all_p_files]
         self.ncharges = [x[0].nuclear_charges for x in self.mols_reactants]
@@ -278,14 +270,14 @@ class QML:
 
         return
 
-    def get_ee_data(self):
-        data = pd.read_csv("data/ee/data.csv", index_col=0)
-        reactants_files = ["data/ee/data_react_xyz/"+data.mol.values[i]+data.enan.values[i]+'.xyz'
+    def get_proparg_data(self):
+        data = pd.read_csv("data/Proparg-21-TS/data.csv", index_col=0)
+        reactants_files = ["data/Proparg-21-TS/data_react_xyz/"+data.mol.values[i]+data.enan.values[i]+'.xyz'
                      for i in range(len(data))]
-        products_files = ["data/ee/data_prod_xyz/"+data.mol.values[i]+data.enan.values[i]+'.xyz'
+        products_files = ["data/Proparg-21-TS/data_prod_xyz/"+data.mol.values[i]+data.enan.values[i]+'.xyz'
                     for i in range(len(data))]
         all_mols = [qml.Compound(x) for x in reactants_files + products_files]
-        self.energies = data.dErxn.to_numpy()
+        self.barriers = data.dErxn.to_numpy()
         self.ncharges = [mol.nuclear_charges for mol in all_mols]
         self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
         self.max_natoms = max([len(x) for x in self.ncharges])
@@ -314,43 +306,35 @@ class QML:
 
         return
 
-    def get_hfb_data(self, energies='thermo'):
-        co_df = pd.read_csv("data/hfb_db/Co_db.csv")
+    def get_hydroform_data(self):
+        co_df = pd.read_csv("data/Hydroform-22-TS/Co_clean.csv")
         names = co_df["name"].to_list()
         labels = [name[3:] for name in names]
-        co_reactants = ["data/hfb_db/geometries/co/r/"+label+"_reactant.xyz" for label in labels]
-        co_products = ["data/hfb_db/geometries/co/p/"+label+"_product.xyz" for label in labels]
+        co_reactants = ["data/Hydroform-22-TS/geometries/co/r/"+label+"_reactant.xyz" for label in labels]
+        co_products = ["data/Hydroform-22-TS/geometries/co/p/"+label+"_product.xyz" for label in labels]
         self.co_barriers = co_df["f_barr"].to_numpy()
-        self.co_energies = (co_df["en_prod"].to_numpy() - co_df["en_react"].to_numpy()) * 627.5
         self.mols_reactants_co = [[qml.Compound(x)] for x in co_reactants]
         self.mols_products_co = [[qml.Compound(x)] for x in co_products]
 
-        ir_df = pd.read_csv("data/hfb_db/Iridium.csv")
+        ir_df = pd.read_csv("data/Hydroform-22-TS/Ir_clean.csv")
         names = ir_df["name"].to_list()
         labels = [name[3:] for name in names]
-        ir_reactants = ["data/hfb_db/geometries/ir/r/"+label+"_reactant.xyz" for label in labels]
-        ir_products = ["data/hfb_db/geometries/ir/p/"+label+"_product.xyz" for label in labels]
+        ir_reactants = ["data/Hydroform-22-TS/geometries/ir/r/"+label+"_reactant.xyz" for label in labels]
+        ir_products = ["data/Hydroform-22-TS/geometries/ir/p/"+label+"_product.xyz" for label in labels]
         self.ir_barriers = ir_df["f_barr"].to_numpy()
-        self.ir_energies = (ir_df["en_prod"].to_numpy() - ir_df["en_react"].to_numpy()) * 627.5
         self.mols_reactants_ir = [[qml.Compound(x)] for x in ir_reactants]
         self.mols_products_ir = [[qml.Compound(x)] for x in ir_products]
 
-        rh_df = pd.read_csv("data/hfb_db/Rh_db.csv")
+        rh_df = pd.read_csv("data/Hydroform-22-TS/Rh_clean.csv")
         names = rh_df["name"].to_list()
         labels = [name[3:] for name in names]
-        rh_reactants = ["data/hfb_db/geometries/rh/r/"+label+"_reactant.xyz" for label in labels]
-        rh_products = ["data/hfb_db/geometries/rh/p/"+label+"_product.xyz" for label in labels]
+        rh_reactants = ["data/Hydroform-22-TS/geometries/rh/r/"+label+"_reactant.xyz" for label in labels]
+        rh_products = ["data/Hydroform-22-TS/geometries/rh/p/"+label+"_product.xyz" for label in labels]
         self.rh_barriers = rh_df["f_barr"].to_numpy()
-        self.rh_energies = (rh_df["en_prod"].to_numpy() - rh_df["en_react"].to_numpy()) * 627.5
         self.mols_reactants_rh = [[qml.Compound(x)] for x in rh_reactants]
         self.mols_products_rh = [[qml.Compound(x)] for x in rh_products]
 
-        if energies == 'thermo':
-            print('using rxn energies')
-            self.energies = np.concatenate((self.co_energies, self.ir_energies, self.rh_energies), axis=0)
-        else:
-            print('using barriers')
-            self.energies = np.concatenate((self.co_barriers, self.ir_barriers, self.rh_barriers), axis=0)
+        self.barriers = np.concatenate((self.co_barriers, self.ir_barriers, self.rh_barriers), axis=0)
 
         all_reactants = co_reactants + ir_reactants + rh_reactants
         all_products = co_products + ir_products + rh_products
@@ -561,7 +545,7 @@ class DScribe:
         return
 
     def get_sn2_data(self):
-        reactions = pd.read_csv("data/sn2-data/reactions.csv", index_col=0)
+        reactions = pd.read_csv("data/SN2-20/reactions.csv", index_col=0)
         reactions["reactant"] = reactions["reactant"].apply(literal_eval)
         reactions["product"] = reactions["product"].apply(literal_eval)
         self.energies = reactions["rxn_nrj"].to_numpy()
@@ -583,11 +567,11 @@ class DScribe:
         ]
         return
 
-    def get_grambow_data(self):
-        reactions = pd.read_csv("data/grambow-barriers/dataset.csv")
+    def get_gdb7_rxn_data(self):
+        reactions = pd.read_csv("data/GDB7-20-TS/dataset.csv")
         self.barriers = reactions["ea kcal/mol"].to_numpy()
-        all_r_files = ["data/grambow-barriers/xyz/"+x for x in reactions["reactant"].to_list()]
-        all_p_files = ["data/grambow-barriers/xyz/"+x for x in reactions["product"].to_list()]
+        all_r_files = ["data/GDB7-20-TS/xyz/"+x for x in reactions["reactant"].to_list()]
+        all_p_files = ["data/GDB7-20-TS/xyz/"+x for x in reactions["product"].to_list()]
         self.atoms_reactants = [[xyz_to_atomsobj(x)] for x in all_r_files]
         self.atoms_products = [[xyz_to_atomsobj(x)] for x in all_p_files]
         ncharges = [x[0].numbers for x in self.atoms_reactants]
@@ -595,14 +579,14 @@ class DScribe:
 
         return
 
-    def get_ee_data(self):
-        data = pd.read_csv("data/ee/data.csv", index_col=0)
-        reactants_files = ["data/ee/data_react_xyz/"+data.mol.values[i]+data.enan.values[i]+'.xyz'
+    def get_proparg_data(self):
+        data = pd.read_csv("data/Proparg-21-TS/data.csv", index_col=0)
+        reactants_files = ["data/Proparg-21-TS/data_react_xyz/"+data.mol.values[i]+data.enan.values[i]+'.xyz'
                      for i in range(len(data))]
-        products_files = ["data/ee/data_prod_xyz/"+data.mol.values[i]+data.enan.values[i]+'.xyz'
+        products_files = ["data/Proparg-21-TS/data_prod_xyz/"+data.mol.values[i]+data.enan.values[i]+'.xyz'
                     for i in range(len(data))]
 
-        self.energies = data.dErxn.to_numpy()
+        self.barriers = data.dErxn.to_numpy()
         all_files = reactants_files + products_files 
         all_atoms = [xyz_to_atomsobj(x) for x in all_files]
         ncharges = [a.numbers for a in all_atoms]
@@ -618,34 +602,31 @@ class DScribe:
         ]
         return
 
-    def get_hfb_data(self, energies='thermo'):
-        co_df = pd.read_csv("data/hfb_db/Co_db.csv")
+    def get_hydroform_data(self):
+        co_df = pd.read_csv("data/Hydroform-22-TS/Co_clean.csv")
         names = co_df["name"].to_list()
         labels = [name[3:] for name in names]
-        co_reactants = ["data/hfb_db/geometries/co/r/"+label+"_reactant.xyz" for label in labels]
-        co_products = ["data/hfb_db/geometries/co/p/"+label+"_product.xyz" for label in labels]
+        co_reactants = ["data/Hydroform-22-TS/geometries/co/r/"+label+"_reactant.xyz" for label in labels]
+        co_products = ["data/Hydroform-22-TS/geometries/co/p/"+label+"_product.xyz" for label in labels]
         self.co_barriers = co_df["f_barr"].to_numpy()
-        self.co_energies = (co_df["en_prod"].to_numpy() - co_df["en_react"].to_numpy()) * 627.5
         self.atoms_reactants_co = [[xyz_to_atomsobj(x)] for x in co_reactants]
         self.atoms_products_co = [[xyz_to_atomsobj(x)] for x in co_products]
 
-        ir_df = pd.read_csv("data/hfb_db/Iridium.csv")
+        ir_df = pd.read_csv("data/Hydroform-22-TS/Ir_clean.csv")
         names = ir_df["name"].to_list()
         labels = [name[3:] for name in names]
-        ir_reactants = ["data/hfb_db/geometries/ir/r/"+label+"_reactant.xyz" for label in labels]
-        ir_products = ["data/hfb_db/geometries/ir/p/"+label+"_product.xyz" for label in labels]
+        ir_reactants = ["data/Hydroform-22-TS/geometries/ir/r/"+label+"_reactant.xyz" for label in labels]
+        ir_products = ["data/Hydroform-22-TS/geometries/ir/p/"+label+"_product.xyz" for label in labels]
         self.ir_barriers = ir_df["f_barr"].to_numpy()
-        self.ir_energies = (ir_df["en_prod"].to_numpy() - ir_df["en_react"].to_numpy()) * 627.5
         self.atoms_reactants_ir = [[xyz_to_atomsobj(x)] for x in ir_reactants]
         self.atoms_products_ir = [[xyz_to_atomsobj(x)] for x in ir_products]
 
-        rh_df = pd.read_csv("data/hfb_db/Rh_db.csv")
+        rh_df = pd.read_csv("data/Hydroform-22-TS/Rh_clean.csv")
         names = rh_df["name"].to_list()
         labels = [name[3:] for name in names]
-        rh_reactants = ["data/hfb_db/geometries/rh/r/"+label+"_reactant.xyz" for label in labels]
-        rh_products = ["data/hfb_db/geometries/rh/p/"+label+"_product.xyz" for label in labels]
+        rh_reactants = ["data/Hydroform-22-TS/geometries/rh/r/"+label+"_reactant.xyz" for label in labels]
+        rh_products = ["data/Hydroform-22-TS/geometries/rh/p/"+label+"_product.xyz" for label in labels]
         self.rh_barriers = rh_df["f_barr"].to_numpy()
-        self.rh_energies = (rh_df["en_prod"].to_numpy() - rh_df["en_react"].to_numpy()) * 627.5
         self.atoms_reactants_rh = [[xyz_to_atomsobj(x)] for x in rh_reactants]
         self.atoms_products_rh = [[xyz_to_atomsobj(x)] for x in rh_products]
 
@@ -656,12 +637,7 @@ class DScribe:
         self.atoms_reactants = [[xyz_to_atomsobj(x)] for x in all_reactants]
         self.atoms_products = [[xyz_to_atomsobj(x)] for x in all_products]
 
-        if energies == 'thermo':
-            print("using reaction energies")
-            self.energies = np.concatenate((self.co_energies, self.ir_energies, self.rh_energies))
-        else:
-            print("using barriers")
-            self.energies = np.concatenate((self.co_barriers, self.ir_barriers, self.rh_barriers))
+        self.barriers = np.concatenate((self.co_barriers, self.ir_barriers, self.rh_barriers))
         ncharges = [a.numbers for a in list_reactants]
         self.unique_ncharges = np.unique(np.concatenate(ncharges))
         self.max_natoms = max([len(x) for x in ncharges])
