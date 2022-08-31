@@ -13,18 +13,18 @@ An example generating learning curves for all reaction reps for the SN2 dataset 
 
 # How to use
 
-A `conda` environment is provided which can be installed by running:
+A `conda` environment is provided (`b2r2.yaml`) which can be created by running:
 
 ```conda env create --file b2r2.yaml```
 
-The b2r2 environment can be used to access all functionalities. To set the environment up in `jupyter`, run:
+The resulting b2r2 environment has all the necessary dependencies and can be used to access all functionalities. To set the environment up in `jupyter`, run:
 
 ```
 conda install ipykernel
 python -m ipykernel install --user --name=b2r2
 ```
 
-which will then let you select the b2r2 kernel to run.
+which will then let you select the b2r2 kernel to run. This is the recommended way to proceed.
 
 Otherwise, key dependencies are:
 - `ase`
