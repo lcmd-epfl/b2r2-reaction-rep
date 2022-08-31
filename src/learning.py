@@ -1,11 +1,12 @@
 import numpy as np
-from sklearn.metrics.pairwise import rbf_kernel
-from sklearn.model_selection import train_test_split, KFold
 from scipy.spatial import distance_matrix
+from sklearn.metrics.pairwise import rbf_kernel
+from sklearn.model_selection import KFold, train_test_split
+
 
 def predict_KRR(X_train, X_test, y_train, y_test, sigma=100, l2reg=1e-6):
 
-    g_gauss = 1.0 / (2 * sigma ** 2)
+    g_gauss = 1.0 / (2 * sigma**2)
 
     K = rbf_kernel(X_train, X_train, gamma=g_gauss)
     K[np.diag_indices_from(K)] += l2reg
@@ -18,8 +19,11 @@ def predict_KRR(X_train, X_test, y_train, y_test, sigma=100, l2reg=1e-6):
 
 
 def opt_hyperparams(
-    X, y, CV=5, seed=100, 
-    sigmas=[0.1, 1, 10, 100, 1000, 10000], 
+    X,
+    y,
+    CV=5,
+    seed=100,
+    sigmas=[0.1, 1, 10, 100, 1000, 10000],
     l2regs=[1e-10, 1e-8, 1e-6, 1e-4],
 ):
 
@@ -53,7 +57,6 @@ def opt_hyperparams(
     )
     return min_sigma, min_l2reg
 
-                    
 
 def learning_curve(X, y, CV=5, n_points=5, seed=100, sigma=1, l2reg=1e-6):
 
@@ -68,15 +71,15 @@ def learning_curve(X, y, CV=5, n_points=5, seed=100, sigma=1, l2reg=1e-6):
         X_train_i, X_test_i = X[train_idx], X[test_idx]
         y_train_i, y_test_i = y[train_idx], y[test_idx]
 
-        train_sizes = [int(len(y_train_i)*x) for x in train_fractions]
+        train_sizes = [int(len(y_train_i) * x) for x in train_fractions]
 
         for j, train_size in enumerate(train_sizes):
             X_train = X_train_i[:train_size]
             y_train = y_train_i[:train_size]
-            mae, _ = predict_KRR(X_train, X_test_i, 
-                                y_train, y_test_i, 
-                                sigma=sigma, l2reg=l2reg)
-            maes[i,j] = mae
+            mae, _ = predict_KRR(
+                X_train, X_test_i, y_train, y_test_i, sigma=sigma, l2reg=l2reg
+            )
+            maes[i, j] = mae
 
     mean_maes = np.mean(maes, axis=0)
     stdev = np.std(maes, axis=0)
@@ -122,12 +125,13 @@ def FPS_learning_curve(X, y, CV=10, sigma=10, l2reg=1e-10):
         train_sizes = [int(len(y_train_i) * x) for x in train_fractions]
 
         for j, train_size in enumerate(train_sizes):
-            sub_train_indices =  FPS(D_train, train_size)
+            sub_train_indices = FPS(D_train, train_size)
             X_train = X_train_i[sub_train_indices]
             y_train = y_train_i[sub_train_indices]
-            mae, _ = predict_KRR(X_train, X_test_i, y_train, y_test_i,
-                                sigma=sigma, l2reg=l2reg)
-            maes[i,j] = mae
+            mae, _ = predict_KRR(
+                X_train, X_test_i, y_train, y_test_i, sigma=sigma, l2reg=l2reg
+            )
+            maes[i, j] = mae
     mean_maes = np.mean(maes, axis=0)
     stdev = np.std(maes, axis=0)
     return train_sizes, mean_maes, stdev
