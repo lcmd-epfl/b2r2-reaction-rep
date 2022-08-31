@@ -17,7 +17,7 @@ A `conda` environment is provided which can be installed by running:
 
 ```conda env create --file b2r2.yaml```
 
-The b2r2 environment can be used to access all functionalities. To set it up in `jupyter`, run:
+The b2r2 environment can be used to access all functionalities. To set the environment up in `jupyter`, run:
 
 ```
 conda install ipykernel
@@ -29,7 +29,7 @@ which will then let you select the b2r2 kernel to run.
 Otherwise, key dependencies are:
 - `ase`
 - `dscribe`
-- `qml` (version  `0.4.0.12` or newer from the develop branch. 
+- `qml` (version  `0.4.0.12` or newer from the develop branch )
 
 The latter is required to access the `fchl` module of `qml`. Get it [here](https://github.com/qmlcode/qml/tree/develop). 
 
