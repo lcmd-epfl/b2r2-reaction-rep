@@ -3,8 +3,8 @@
 This repo accompanies the paper "Physics-based representations for machine learning of chemical reactions".
 
 This repository provides the means to:
-- Generate the B2R2 reaction representations (in src/reaction_reps)
-- Generate reaction representations from molecular representations (SLATM, FCHL, etc)
+- Generate the B2R2 reaction representations (in `src/reaction_reps`)
+- Generate reaction representations from molecular representations (SLATM, FCHL, etci.)
 - Access 4 reaction datasets (SN2-20, GDB7-20-TS, Proparg-21-TS and Hydroform-22-TS)
 - For the latter (Hydroform-22-TS), this is the only place to find the dataset at the moment
 
@@ -26,12 +26,16 @@ python -m ipykernel install --user --name=b2r2
 
 which will then let you select the b2r2 kernel to run. This is the recommended way to proceed.
 
-Otherwise, key dependencies are:
+Otherwise, dependencies are:
+- `pandas`
+- `numpy`
+- `scipy`
 - `ase`
 - `dscribe`
 - `qml` (version  `0.4.0.12` or newer from the develop branch )
 
 The latter is required to access the `fchl` module of `qml`. Get it [here](https://github.com/qmlcode/qml/tree/develop). 
+We have successfully tested our code with several modern versions of all other dependencies.
 
 
 # Todo
