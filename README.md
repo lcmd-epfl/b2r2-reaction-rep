@@ -34,7 +34,7 @@ Otherwise, dependencies are:
 - `dscribe`
 - `qml` (version  `0.4.0.12` or newer from the develop branch )
 
-The latter is required to access the `fchl` module of `qml`. Get it [here](https://github.com/qmlcode/qml/tree/develop). 
+The latter is required to access the `fchl` module of `qml`. Follow installation instructions [here](http://www.qmlcode.org/installation.html).
 We have successfully tested our code with several modern versions of all other dependencies.
 
 
