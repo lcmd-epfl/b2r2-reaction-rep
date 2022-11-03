@@ -17,7 +17,7 @@ def xyz_to_atomsobj(xyz):
 
     symbols = []
     positions = []
-    for line in lines[2:2+nat]:
+    for line in lines[2 : 2 + nat]:
         symbol, x, y, z = line.split()
         symbols.append(symbol)
         positions.append([float(x), float(y), float(z)])
