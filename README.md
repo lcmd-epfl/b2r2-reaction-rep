@@ -40,4 +40,5 @@ We have successfully tested our code with several modern versions of all other d
 
 # Todo
 
-Usage for experimental data including conditions.
+- Usage for experimental data including conditions
+- Speed-up (fortran or numba)
