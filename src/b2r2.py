@@ -28,11 +28,9 @@ def get_gaussian(x, R):
 def get_skew_gaussian(x, R, Z_I, Z_J, variation="l"):
     mu, sigma = get_mu_sigma(R)
     if variation == "l":
-   #     func = Z_J * skewnorm.pdf(x, Z_J, mu, sigma)
- #   elif variation == "n":
-  #      func = Z_I * skewnorm.pdf(x, Z_J, mu, sigma)
-   # elif variation == 'cheap':
-        func = 1
+        func = Z_J * skewnorm.pdf(x, Z_J, mu, sigma)
+    elif variation == "n":
+        func = Z_I * skewnorm.pdf(x, Z_J, mu, sigma)
     return func
 
 
@@ -128,7 +126,6 @@ def get_b2r2_a(
 
 def get_b2r2_l_molecular(
     ncharges, coords, elements=[1, 6, 7, 8, 9, 17], Rcut=3.5, gridspace=0.03,
-    variation='l'
 ):
 
     for ncharge in ncharges:
@@ -155,7 +152,7 @@ def get_b2r2_l_molecular(
                     if R < Rcut:
                         if ncharge_a == bag:
                             twobodyrep[k] += get_skew_gaussian(
-                                grid, R, ncharge_a, ncharge_b, variation="l"
+                                grid, R, ncharge_a, ncharge_b
                             )
 
     twobodyrep = np.concatenate(twobodyrep)
@@ -170,7 +167,6 @@ def get_b2r2_l(
     elements=[1, 6, 7, 8, 9, 17],
     Rcut=3.5,
     gridspace=0.03,
-    variation='l'
 ):
     """
     Reactants_ncharges is a list of lists where the outer list is the total number
@@ -214,7 +210,6 @@ def get_b2r2_l(
                     Rcut=Rcut,
                     gridspace=gridspace,
                     elements=elements,
-                    variation=variation
                 )
                 for j in range(len(products_ncharges[i]))
             ]
@@ -225,6 +220,7 @@ def get_b2r2_l(
 
     b2r2_l = b2r2_l_products - b2r2_l_reactants
     return b2r2_l
+
 
 def get_b2r2_n_molecular(
     ncharges, coords, elements=[1, 6, 7, 8, 9, 17], Rcut=3.5, gridspace=0.03
