@@ -12,14 +12,11 @@ if __name__ == "__main__":
     parser = ap.ArgumentParser()
     parser.add_argument("version") # l, a, n
     args = parser.parse_args()
-    if args.version not in ['l', 'a', 'n']:
-        args.version = 'l'
-        print("B2R2 version provided as an argument is not l, a, or n. Defaulting to linear (l) B2R2...")
 
     reactants = sorted(glob("data/GDB7-20-TS/xyz/reactant_*.xyz"))
     products = sorted(glob("data/GDB7-20-TS/xyz/product_*.xyz"))
-    reactants = reactants[:500]
-    products = products[:500]
+    reactants = reactants[:1000]
+    products = products[:1000]
     mols_reactants = [qml.Compound(x) for x in reactants]
     ncharges_reactants = [[x.nuclear_charges] for x in mols_reactants]
     coords_reactants = [[x.coordinates] for x in mols_reactants]
@@ -41,5 +38,9 @@ if __name__ == "__main__":
         b2r2_l = b2r2.get_b2r2_n(ncharges_reactants, ncharges_products, 
                                 coords_reactants, coords_products,
                                 elements=unique_ncharges, Rcut=3)
+    elif args.version == 'cheap':
+        b2r2_l = b2r2.get_b2r2_l(ncharges_reactants, ncharges_products, 
+                                coords_reactants, coords_products,
+                                elements=unique_ncharges, Rcut=3, variation='cheap')
 
 
