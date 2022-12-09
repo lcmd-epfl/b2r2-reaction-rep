@@ -180,4 +180,4 @@ dependencies:
   - zlib=1.2.12=h166bdaf_2
   - zstd=1.5.2=h6239696_4
   - pip:
-    - git+https://github.com/qmlcode/qml.git@develop
+    - git+https://github.com/qmlcode/qml@develop

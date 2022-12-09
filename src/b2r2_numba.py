@@ -1,9 +1,10 @@
 import itertools
 
 import numpy as np
+from numba import njit
 from scipy.stats import skewnorm
 
-
+@njit
 def get_bags(unique_ncharges):
     combs = list(itertools.combinations(unique_ncharges, r=2))
     combs = [list(x) for x in combs]
@@ -12,19 +13,19 @@ def get_bags(unique_ncharges):
     combs += self_combs
     return combs
 
-
+@njit
 def get_mu_sigma(R):
     mu = R / 2
     sigma = R / 8
     return mu, sigma
 
-
+@njit
 def get_gaussian(x, R):
     mu, sigma = get_mu_sigma(R)
     norm = 1 / (np.sqrt(2 * np.pi) * sigma)
     return norm * np.exp(-((x - mu) ** 2) / (2 * sigma**2))
 
-
+@njit
 def get_skew_gaussian(x, R, Z_I, Z_J, variation="l"):
     mu, sigma = get_mu_sigma(R)
     if variation == "l":
@@ -34,6 +35,7 @@ def get_skew_gaussian(x, R, Z_I, Z_J, variation="l"):
     return func
 
 
+@njit
 def get_b2r2_a_molecular(
     ncharges, coords, elements=[1, 6, 7, 8, 9, 17], Rcut=3.5, gridspace=0.03
 ):
@@ -61,7 +63,7 @@ def get_b2r2_a_molecular(
     twobodyrep = np.concatenate(twobodyrep)
     return twobodyrep
 
-
+@njit
 def get_b2r2_a(
     reactants_ncharges,
     products_ncharges,
@@ -124,6 +126,7 @@ def get_b2r2_a(
     return b2r2_a
 
 
+@njit
 def get_b2r2_l_molecular(
     ncharges, coords, elements=[1, 6, 7, 8, 9, 17], Rcut=3.5, gridspace=0.03
 ):
@@ -158,7 +161,7 @@ def get_b2r2_l_molecular(
     twobodyrep = np.concatenate(twobodyrep)
     return twobodyrep
 
-
+@njit
 def get_b2r2_l(
     reactants_ncharges,
     products_ncharges,
@@ -220,6 +223,7 @@ def get_b2r2_l(
     b2r2_l = b2r2_l_products - b2r2_l_reactants
     return b2r2_l
 
+@njit
 def get_b2r2_n_molecular(
     ncharges, coords, elements=[1, 6, 7, 8, 9, 17], Rcut=3.5, gridspace=0.03
 ):
@@ -249,7 +253,7 @@ def get_b2r2_n_molecular(
 
     return twobodyrep
 
-
+@njit
 def get_b2r2_n(
     reactants_ncharges,
     products_ncharges,
