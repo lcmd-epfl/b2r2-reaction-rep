@@ -1,10 +1,9 @@
 # B2R2 Reaction Representation
 
 This repository provides the means to:
-- Generate the B2R2 reaction representations (in `reactionreps`)
-- Generate reaction representations from molecular representations (SLATM, FCHL, etci.)
+- Generate the B2R2 reaction representations 
+- Generate reaction representations from molecular representations (SLATM, FCHL, etc.)
 - Access 4 reaction datasets (SN2-20, GDB7-20-TS, Proparg-21-TS and Hydroform-22-TS)
-- For the latter (Hydroform-22-TS), this is the only place to find the dataset at the moment
 
 An example generating learning curves for all reaction reps for the SN2 dataset is provided in `paper_sn2_example.ipynb`. 
 
