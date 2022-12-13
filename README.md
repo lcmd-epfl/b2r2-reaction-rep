@@ -15,7 +15,22 @@ An example generating learning curves for all reaction reps for the SN2 dataset 
 A `requirements.txt` file is provided which includes all required packages to run all examples.
 These can be installed using `pip install requirements.txt`
 
+# Citation
+If using the B2R2 reaction representation, consider citing the paper with the bibtex provided:
+```
+@article{vangerwen2022physics,
+  title={Physics-based representations for machine learning properties of chemical reactions},
+  author={van Gerwen, Puck and Fabrizio, Alberto and Wodrich, Matthew D and Corminboeuf, Clemence},
+  journal={Machine Learning: Science and Technology},
+  volume={3},
+  number={4},
+  pages={045005},
+  year={2022},
+  publisher={IOP Publishing},
+  doi={10.1088/2632-2153/ac8f1a}
+}
 
+```
 
 # Todo
 
