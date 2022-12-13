@@ -1,0 +1,15 @@
+LICENSE
+README.md
+setup.py
+reactionreps/__init__.py
+reactionreps/learning.py
+reactionreps/reaction_reps.py
+reactionreps/utils.py
+reactionreps.egg-info/PKG-INFO
+reactionreps.egg-info/SOURCES.txt
+reactionreps.egg-info/dependency_links.txt
+reactionreps.egg-info/requires.txt
+reactionreps.egg-info/top_level.txt
+reactionreps/b2r2/__init__.py
+reactionreps/b2r2/b2r2.py
+reactionreps/b2r2/slatm.py
