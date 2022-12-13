@@ -7,9 +7,9 @@ import qml
 from dscribe.descriptors import SOAP
 from scipy import stats
 
-from reactionreps.b2r2.b2r2 import get_b2r2_a_molecular, get_b2r2_l_molecular, get_b2r2_n_molecular
+from reactionreps.b2r2 import get_b2r2_a_molecular, get_b2r2_l_molecular, get_b2r2_n_molecular
 from reactionreps.utils import xyz_to_atomsobj
-from reactionreps.b2r2.slatm import get_slatm
+from reactionreps.slatm import get_slatm
 
 pt = {"H": 1, "C": 6, "N": 7, "O": 8, "S": 16, "Cl": 17, "F": 9}
 

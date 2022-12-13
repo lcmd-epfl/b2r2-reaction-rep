@@ -26,7 +26,6 @@ def setup_reps():
         name="reactionreps",
         packages=[
             'reactionreps',
-            'reactionreps.b2r2',
             'data'
             ],
 
