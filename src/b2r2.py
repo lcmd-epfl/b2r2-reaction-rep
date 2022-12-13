@@ -192,7 +192,6 @@ def get_b2r2_l(
                     Rcut=Rcut,
                     gridspace=gridspace,
                     elements=elements,
-                    variation=variation
                 )
                 for j in range(len(reactants_ncharges[i]))
             ]
