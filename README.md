@@ -13,7 +13,10 @@ An example generating learning curves for all reaction reps for the SN2 dataset 
 
 # How to install
 A `requirements.txt` file is provided which includes all required packages to run all examples.
-These can be installed using `pip install requirements.txt`
+Note that the order in the requirements file matters, so installation can be done like:
+```
+cat requirements.txt | xargs pip install
+```
 
 # Citation
 If using the B2R2 reaction representation, consider citing the paper with the bibtex provided:

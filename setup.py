@@ -1,4 +1,4 @@
-from setuptools import setup 
+from setuptools import setup
 
 __author__ = "Puck van Gerwen"
 __copyright__ = "Copyright 2022"
@@ -19,9 +19,7 @@ def readme():
     with open('README.md') as f:
         return f.read()
 
-def setup_reps():
-
-    setup(
+setup(
 
         name="reactionreps",
         packages=[
@@ -39,10 +37,6 @@ def setup_reps():
         long_description = readme(),
         keywords = ['Machine Learning', 'Quantum Chemistry'],
         classifiers = [],
+        setup_requires = ['numpy'],
         install_requires = requirements(),
 )
-
-
-if __name__ == '__main__':
-
-    setup_reps()
