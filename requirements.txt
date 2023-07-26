@@ -104,4 +104,4 @@ webcolors==1.12
 webencodings==0.5.1
 websocket-client==1.4.2
 widgetsnbextension==4.0.4
-qml @ git+https://github.com/qmlcode/qml@a7921c9176b9498dcce096efad0883271706d633
+git+https://github.com/qmlcode/qml@a7921c9176b9498dcce096efad0883271706d633
