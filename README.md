@@ -18,7 +18,7 @@ Currently, the expected input is .xyz files (cheap estimate of 3D structure) of 
 A `requirements.txt` file is provided which includes all required packages to run all examples.
 Note that the order in the requirements file matters, so installation can be done like:
 ```
-cat requirements.txt | xargs pip install
+xargs -L 1 pip install < requirements.txt
 ```
 
 ## Citation
