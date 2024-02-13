@@ -1,12 +1,8 @@
 import itertools
 
 import numpy as np
-import scipy 
+from scipy.stats import skewnorm
 
-
-def skewnorm_pdf(x):
-    return np.exp()*(1+scipy.special.erf())
-    
 
 def get_bags(unique_ncharges):
     combs = list(itertools.combinations(unique_ncharges, r=2))
@@ -32,9 +28,9 @@ def get_gaussian(x, R):
 def get_skew_gaussian(x, R, Z_I, Z_J, variation="l"):
     mu, sigma = get_mu_sigma(R)
     if variation == "l":
-        func = Z_J * skewnorm_pdf(x, Z_J, mu, sigma)
+        func = Z_J * skewnorm.pdf(x, Z_J, mu, sigma)
     elif variation == "n":
-        func = Z_I * skewnorm_pdf(x, Z_J, mu, sigma)
+        func = Z_I * skewnorm.pdf(x, Z_J, mu, sigma)
     return func
 
 
